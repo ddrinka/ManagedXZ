@@ -13,10 +13,7 @@ namespace ManagedXZ
         {
             // adjust thread numbers
             if (threads > Environment.ProcessorCount)
-            {
-                Trace.TraceWarning("it's not reasonable to have more threads than processors");
                 threads = Environment.ProcessorCount;
-            }
 
             if (threads == 1)
             {
@@ -69,7 +66,8 @@ namespace ManagedXZ
                             _lzma_stream.avail_in = (UIntPtr)bytesToProcess;
                             Marshal.Copy(data, read_pos, inbuf, bytesToProcess);
                             read_pos += bytesToProcess;
-                            Trace.Assert(read_pos <= offset + count);
+							if (read_pos > offset + count)
+								throw new InvalidOperationException();
                         }
                         if (read_pos == offset + count)
                             action = lzma_action.LZMA_FINISH;

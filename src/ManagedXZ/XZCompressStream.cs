@@ -184,7 +184,7 @@ namespace ManagedXZ
                 Native.lzma_end(_lzma_stream);
                 Marshal.FreeHGlobal(_inbuf);
                 Marshal.FreeHGlobal(_outbuf);
-                _stream.Close();
+				_stream.Dispose();
                 _stream = null;
             }
         }

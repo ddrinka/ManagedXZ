@@ -90,11 +90,12 @@ namespace ManagedXZ
                 if (cReadable > 0)
                 {
                     var cCopy = Math.Min(cReadable, count - cTotalRead);
-                    var p = Native.Is64Bit ? new IntPtr(_outbuf.ToInt64() + read_pos) : new IntPtr(_outbuf.ToInt32() + read_pos);
+                    var p = Native.Is64Bit() ? new IntPtr(_outbuf.ToInt64() + read_pos) : new IntPtr(_outbuf.ToInt32() + read_pos);
                     Marshal.Copy(p, buffer, offset + cTotalRead, cCopy);
                     cTotalRead += cCopy;
                     read_pos += cCopy;
-                    Trace.Assert(cTotalRead <= count);
+					if (cTotalRead > count)
+						throw new InvalidOperationException();
                     if (cTotalRead == count)
                         return cTotalRead;
                 }
@@ -105,7 +106,8 @@ namespace ManagedXZ
                     return cTotalRead;
 
                 // otherwise, reset outbuf to recv more decompressed data from liblzma, or decompress is finished
-                Trace.Assert(read_pos + (uint)_lzma_stream.avail_out <= BUFSIZE);
+				if(read_pos+(uint)_lzma_stream.avail_out > BUFSIZE)
+					throw new InvalidOperationException();
                 if (_lzma_stream.avail_out == UIntPtr.Zero && read_pos + (uint)_lzma_stream.avail_out == BUFSIZE)
                 {
                     _lzma_stream.next_out = _outbuf;
@@ -131,7 +133,7 @@ namespace ManagedXZ
             Native.lzma_end(_lzma_stream);
             Marshal.FreeHGlobal(_inbuf);
             Marshal.FreeHGlobal(_outbuf);
-            _stream.Close();
+			_stream.Dispose();
             _stream = null;
         }
 

@@ -8,30 +8,17 @@ namespace ManagedXZ
     internal static class Native
     {
         private static readonly IntPtr _handle;
-        public static bool Is64Bit;
 
         static Native()
         {
-            // check 32bit or 64bit
-            PortableExecutableKinds peKinds;
-            ImageFileMachine arch;
-            typeof(object).Module.GetPEKind(out peKinds, out arch);
             string dllFilename;
-            if (arch == ImageFileMachine.AMD64)
-            {
+            if (Is64Bit())
                 dllFilename = "liblzma_amd64.dll";
-                Is64Bit = true;
-            }
-            else if (arch == ImageFileMachine.I386)
-            {
+			else
                 dllFilename = "liblzma_x86.dll";
-                Is64Bit = false;
-            }
-            else
-                throw new Exception(arch + " is not supported yet");
 
-            // try load library. todo: embed native dlls as resource?
-            var thisdir = Assembly.GetExecutingAssembly().Location;
+			// try load library. todo: embed native dlls as resource?
+			var thisdir = GetAssemblyLocation();
             dllFilename = Path.Combine(Path.GetDirectoryName(thisdir), dllFilename);
             _handle = LoadLibrary(dllFilename);
             if (_handle == IntPtr.Zero)
@@ -46,22 +33,32 @@ namespace ManagedXZ
             lzma_auto_decoder = GetFunction<lzma_auto_decoder_delegate>("lzma_auto_decoder");
         }
 
+		static string GetAssemblyLocation()
+		{
+			return Path.Combine(AppContext.BaseDirectory, "libs\\");
+		}
+
+		public static bool Is64Bit()
+		{
+			return IntPtr.Size == 8;
+		}
+
         public static void CheckSize()
         {
-            Console.WriteLine($"sizeof(lzma_stream)={Marshal.SizeOf(typeof(lzma_stream))}");
-            Console.WriteLine($"sizeof(lzma_mt)={Marshal.SizeOf(typeof(lzma_mt))}");
+            Console.WriteLine($"sizeof(lzma_stream)={Marshal.SizeOf<lzma_stream>()}");
+            Console.WriteLine($"sizeof(lzma_mt)={Marshal.SizeOf<lzma_mt>()}");
         }
 
-        #region dll helpers
+#region dll helpers
 
         private static T GetFunction<T>(string fname)
         {
             var ptr = GetProcAddress(_handle, fname);
             if (ptr == IntPtr.Zero) throw new Exception("GetProcAddress returns nullptr for " + fname);
-            return (T)(object)Marshal.GetDelegateForFunctionPointer(ptr, typeof(T));
+            return (T)(object)Marshal.GetDelegateForFunctionPointer<T>(ptr);
         }
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, BestFitMapping = false, SetLastError = true)]
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, BestFitMapping = false, SetLastError = true)]
         private static extern IntPtr LoadLibrary(string fileName);
 
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -71,9 +68,9 @@ namespace ManagedXZ
         [DllImport("kernel32.dll")]
         private static extern IntPtr GetProcAddress(IntPtr moduleHandle, string procname);
 
-        #endregion
+#endregion
 
-        #region xz functions
+#region xz functions
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate lzma_ret lzma_code_delegate(lzma_stream strm, lzma_action action);
@@ -126,6 +123,6 @@ namespace ManagedXZ
         //extern LZMA_API(lzma_ret) lzma_alone_decoder(lzma_stream* strm, uint64_t memlimit)
         //extern LZMA_API(lzma_ret) lzma_stream_buffer_decode(uint64_t* memlimit, uint32_t flags,const lzma_allocator* allocator,const uint8_t*in, size_t *in_pos, size_t in_size,uint8_t *out, size_t *out_pos, size_t out_size)
 
-        #endregion
+#endregion
     }
 }

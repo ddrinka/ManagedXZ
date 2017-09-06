@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.3</TargetFramework>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Title>ManagedXZ</Title>
+    <Description>.net wrapper for xz utils</Description>
+    <Company>goldenbull@gmail.com</Company>
+    <Product>ManagedXZ</Product>
+    <Copyright>Copyleft 2016</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="libs\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>
