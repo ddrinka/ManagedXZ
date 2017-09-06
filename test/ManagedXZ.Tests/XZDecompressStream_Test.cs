@@ -32,7 +32,7 @@ namespace ManagedXZ.Tests
 		[Fact]
 		public void Dispose()
 		{
-			var c = new XZDecompressStream("temp2.xz");
+			var c = new XZDecompressStream("Files\\0byte.bin.xz");
 			c.Dispose();
 			c.Dispose();
 		}
