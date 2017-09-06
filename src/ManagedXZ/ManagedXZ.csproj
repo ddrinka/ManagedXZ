@@ -8,11 +8,12 @@
     <Company>goldenbull@gmail.com</Company>
     <Product>ManagedXZ</Product>
     <Copyright>Copyleft 2016</Copyright>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="libs\*">
+    <Content Include="libs\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </Content>
   </ItemGroup>
 </Project>
